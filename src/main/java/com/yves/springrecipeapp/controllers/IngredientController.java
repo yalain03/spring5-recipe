@@ -1,6 +1,8 @@
 package com.yves.springrecipeapp.controllers;
 
 import com.yves.springrecipeapp.commands.IngredientCommand;
+import com.yves.springrecipeapp.commands.RecipeCommand;
+import com.yves.springrecipeapp.commands.UnitOfMeasureCommand;
 import com.yves.springrecipeapp.services.IngredientService;
 import com.yves.springrecipeapp.services.RecipeService;
 import com.yves.springrecipeapp.services.UnitOfMeasureService;
@@ -37,6 +39,21 @@ public class IngredientController {
     }
 
     @GetMapping
+    @RequestMapping("recipe/{recipeId}/ingredient/new")
+    public String newIngredient(@PathVariable String recipeId, Model model) {
+        RecipeCommand recipeCommand = recipeService.findCommandById(Long.valueOf(recipeId));
+
+        IngredientCommand ingredientCommand = new IngredientCommand();
+        ingredientCommand.setRecipeId(Long.valueOf(recipeId));
+        model.addAttribute("ingredient", ingredientCommand);
+
+        ingredientCommand.setUom(new UnitOfMeasureCommand());
+
+        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
+        return "recipe/ingredient/ingredientform";
+    }
+
+    @GetMapping
     @RequestMapping("recipe/{recipeId}/ingredient/{id}/update")
     public String updateRecipeIngredient(@PathVariable String recipeId,
                                          @PathVariable String id, Model model) {
@@ -54,5 +71,14 @@ public class IngredientController {
 //        log.debug("saved ingredient id:" + savedCommand.getId());
 
         return "redirect:/recipe/" + savedCommand.getRecipeId() + "/ingredient/" + savedCommand.getId() + "/show";
+    }
+
+    @GetMapping
+    @RequestMapping("recipe/{recipeId}/ingredient/{id}/delete")
+    public String delete(@PathVariable String recipeId,
+                         @PathVariable String id) {
+        ingredientService.deleteById(Long.valueOf(recipeId), Long.valueOf(id));
+
+        return "redirect:/recipe/" + recipeId + "/ingredients";
     }
 }
